@@ -1,5 +1,11 @@
-import { createContext } from "react";
+import { createContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import auth from "../firebase.config";
 
 //
 
@@ -8,7 +14,32 @@ export const AuthContext = createContext(null); //step- - - - -1
 //
 
 const AuthProvider = ({ children }) => {
-  const authInfo = { intro: "hello, this is me" }; //step - - - - -  3
+  const [user, setUser] = useState(null);
+
+  //   create user using context api
+  const createUser = (email, password) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  //   sign in with context api
+  const signInUser = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+
+      console.log("this is current user", currentUser);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const authInfo = { user, createUser, signInUser }; //step - - - - -  3
+
   return (
     <AuthContext.Provider value={authInfo}>
       {" "}
